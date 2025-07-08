@@ -16,7 +16,8 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* slate-50 */
+            background-color: #1a202c; /* bg-gray-900 - Latar belakang gelap */
+            color: #e2e8f0; /* text-gray-200 - Warna teks terang untuk kontras */
         }
         .chart-container {
             position: relative;
@@ -40,14 +41,14 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f5f9; /* light slate */
+            background: #2d3748; /* dark slate for track */
         }
         ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; /* medium slate */
+            background: #4a5568; /* medium dark slate for thumb */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; /* darker slate */
+            background: #718096; /* lighter dark slate on hover */
         }
         /* Gaya dasar untuk fokus yang terlihat (aksesibilitas) */
         input:focus-visible, button:focus-visible, a:focus-visible {
@@ -55,42 +56,85 @@
             outline-offset: 2px;
             border-radius: 0.5rem; /* Rounded outline */
         }
+
+        /* Gaya untuk ticker tape (teks berjalan) */
+        .ticker-tape {
+            white-space: nowrap; /* Mencegah teks melipat ke bawah */
+            overflow: hidden; /* Menyembunyikan bagian teks yang keluar dari area */
+            box-sizing: border-box;
+            width: 100%;
+            background-color: #2a4365; /* Warna latar belakang ticker (biru tua) */
+            padding: 8px 0;
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem; /* text-sm */
+            color: #e0f2fe; /* text-sky-100 */
+            border-bottom: 1px solid #4299e1; /* border-blue-500 */
+            border-top: 1px solid #4299e1; /* border-blue-500 */
+            position: sticky; /* Agar tetap di atas/bawah saat scroll */
+            z-index: 1000; /* Pastikan di atas konten lain */
+        }
+
+        .ticker-tape span {
+            display: inline-block;
+            padding-right: 2rem; /* Jarak antar item di ticker */
+            animation: scroll-left 30s linear infinite; /* Animasi scrolling */
+        }
+
+        /* Keyframes untuk animasi scrolling */
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Override Chart.js legend label color for dark background */
+        .chartjs-render-monitor .chartjs-legend-labels li span {
+            color: #e2e8f0 !important; /* text-gray-200 */
+        }
     </style>
 </head>
-<body class="text-slate-700">
+<body class="text-gray-200"> <!-- Mengubah warna teks body default -->
+
+    <!-- Ticker Tape Atas -->
+    <div id="top-ticker" class="ticker-tape top-0">
+        <span></span>
+    </div>
 
     <div class="container mx-auto p-4 md:p-8">
         
-        <header class="text-center mb-10"> <!-- Menambah margin bawah -->
-            <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4 tracking-tight">Panduan Interaktif Platform Riset Keuangan</h1> <!-- Menambah tracking dan margin -->
-            <p class="text-lg text-slate-500 max-w-3xl mx-auto leading-relaxed">Gunakan filter di bawah untuk menemukan platform data, API, atau berita yang paling sesuai dengan kebutuhan riset Anda, baik untuk pasar global maupun Indonesia.</p>
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-sky-400 mb-4 tracking-tight">Panduan Interaktif Platform Riset Keuangan</h1> <!-- Warna judul disesuaikan -->
+            <p class="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">Gunakan filter di bawah untuk menemukan platform data, API, atau berita yang paling sesuai dengan kebutuhan riset Anda, baik untuk pasar global maupun Indonesia.</p>
         </header>
 
         <main>
             <!-- Kontainer utama filter dengan shadow yang lebih menonjol -->
-            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-lg mb-8 border border-slate-100">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8"> <!-- Menambah gap antar kolom -->
+            <div class="bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg mb-8 border border-gray-700"> <!-- Warna latar belakang dan border disesuaikan -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-1 flex flex-col items-center justify-center p-4">
-                        <h3 class="text-xl font-semibold text-slate-800 mb-4 text-center">Distribusi Platform Berdasarkan Kategori</h3>
+                        <h3 class="text-xl font-semibold text-sky-400 mb-4 text-center">Distribusi Platform Berdasarkan Kategori</h3> <!-- Warna judul disesuaikan -->
                         <div class="chart-container">
                             <canvas id="categoryChart"></canvas>
                         </div>
                     </div>
                     <div class="lg:col-span-2">
-                        <div class="mb-6 pb-4 border-b border-slate-200"> <!-- Menambah border bawah untuk pemisah visual -->
-                            <label for="search" class="block text-sm font-medium text-slate-600 mb-2">Cari Nama Platform:</label>
-                            <input type="text" id="search" placeholder="Contoh: TradingView, YFinance..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition">
+                        <div class="mb-6 pb-4 border-b border-gray-700"> <!-- Warna border disesuaikan -->
+                            <label for="search" class="block text-sm font-medium text-gray-300 mb-2">Cari Nama Platform:</label> <!-- Warna label disesuaikan -->
+                            <input type="text" id="search" placeholder="Contoh: TradingView, YFinance..." class="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition bg-gray-700 text-gray-100 placeholder-gray-400"> <!-- Warna input disesuaikan -->
                         </div>
                         
-                        <div class="mb-6 pb-4 border-b border-slate-200"> <!-- Menambah border bawah untuk pemisah visual -->
-                            <h3 class="text-sm font-medium text-slate-600 mb-3">Saring Berdasarkan Kategori Utama:</h3> <!-- Menambah margin bawah -->
+                        <div class="mb-6 pb-4 border-b border-gray-700"> <!-- Warna border disesuaikan -->
+                            <h3 class="text-sm font-medium text-gray-300 mb-3">Saring Berdasarkan Kategori Utama:</h3> <!-- Warna judul disesuaikan -->
                             <div id="category-filters" class="flex flex-wrap gap-2">
                                 <!-- Category buttons will be inserted here by JS -->
                             </div>
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-medium text-slate-600 mb-3">Saring Berdasarkan Fitur Penting:</h3> <!-- Menambah margin bawah -->
+                            <h3 class="text-sm font-medium text-gray-300 mb-3">Saring Berdasarkan Fitur Penting:</h3> <!-- Warna judul disesuaikan -->
                             <div id="feature-filters" class="flex flex-wrap gap-x-4 gap-y-2">
                                 <!-- Feature checkboxes will be inserted here by JS -->
                             </div>
@@ -104,6 +148,11 @@
             </div>
         </main>
 
+    </div>
+
+    <!-- Ticker Tape Bawah -->
+    <div id="bottom-ticker" class="ticker-tape bottom-0">
+        <span></span>
     </div>
 
     <script>
@@ -875,6 +924,108 @@
             'berita': '#075985' // Sky-800
         };
 
+        // Data sampel untuk ticker tape
+        const sampleStocks = ["BBCA", "TLKM", "ASII", "UNVR", "GOTO", "BMRI", "BBNI", "ADRO", "ICBP", "BRIS"];
+        const sampleCryptos = ["BTC", "ETH", "BNB", "XRP", "SOL", "ADA", "DOGE", "SHIB", "DOT", "LINK"];
+
+        /**
+         * Menghasilkan harga acak untuk simulasi ticker.
+         * @param {number} min - Harga minimum.
+         * @param {number} max - Harga maksimum.
+         * @returns {number} Harga acak.
+         */
+        function generateRandomPrice(min, max) {
+            return (Math.random() * (max - min) + min);
+        }
+
+        /**
+         * Memformat harga menjadi string mata uang.
+         * @param {number} price - Harga.
+         * @param {string} currency - Simbol mata uang (misal: "Rp", "$").
+         * @returns {string} Harga yang diformat.
+         */
+        function formatPrice(price, currency = '') {
+            return `${currency}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        /**
+         * Membuat konten ticker tape dengan data saham dan kripto acak.
+         * @returns {string} String HTML untuk ticker tape.
+         */
+        function createTickerContent() {
+            let content = '';
+            const numItems = 15; // Jumlah item yang akan ditampilkan di ticker
+            const allAssets = [...sampleStocks, ...sampleCryptos];
+
+            for (let i = 0; i < numItems; i++) {
+                const asset = allAssets[Math.floor(Math.random() * allAssets.length)];
+                let price;
+                let change;
+                let currencySymbol = '';
+                let changeClass = '';
+
+                if (sampleStocks.includes(asset)) {
+                    // Harga saham simulasi (misal: puluhan ribu hingga ratusan ribu IDR)
+                    price = generateRandomPrice(2000, 100000);
+                    currencySymbol = 'Rp';
+                    change = generateRandomPrice(-5, 5); // Perubahan persentase
+                } else {
+                    // Harga kripto simulasi (misal: ribuan hingga puluhan ribu USD)
+                    price = generateRandomPrice(500, 50000);
+                    currencySymbol = '$';
+                    change = generateRandomPrice(-10, 10); // Perubahan persentase
+                }
+
+                if (change > 0) {
+                    changeClass = 'text-green-400'; // Hijau untuk naik
+                } else if (change < 0) {
+                    changeClass = 'text-red-400'; // Merah untuk turun
+                } else {
+                    changeClass = 'text-gray-400'; // Abu-abu untuk stabil
+                }
+
+                content += `<span class="inline-flex items-center">
+                                <span class="font-bold mr-1">${asset}</span>
+                                <span class="mr-1">${formatPrice(price, currencySymbol)}</span>
+                                <span class="${changeClass} text-xs">${change.toFixed(2)}%</span>
+                            </span>`;
+            }
+            // Duplikasi konten agar animasi scrolling mulus
+            return content + content;
+        }
+
+        /**
+         * Memperbarui konten ticker tape.
+         */
+        function updateTickers() {
+            const topTickerSpan = document.querySelector('#top-ticker span');
+            const bottomTickerSpan = document.querySelector('#bottom-ticker span');
+
+            // Reset animasi dengan menghapus dan menambahkan kembali elemen span
+            // Ini diperlukan agar animasi dimulai ulang dengan konten baru
+            const newTopContent = createTickerContent();
+            const newBottomContent = createTickerContent();
+
+            topTickerSpan.style.animation = 'none';
+            topTickerSpan.offsetHeight; /* trigger reflow */
+            topTickerSpan.style.animation = null; 
+            topTickerSpan.innerHTML = newTopContent;
+
+            bottomTickerSpan.style.animation = 'none';
+            bottomTickerSpan.offsetHeight; /* trigger reflow */
+            bottomTickerSpan.style.animation = null;
+            bottomTickerSpan.innerHTML = newBottomContent;
+        }
+
+        /**
+         * Menginisialisasi ticker tape.
+         */
+        function initTickers() {
+            updateTickers(); // Set konten awal
+            setInterval(updateTickers, 10000); // Perbarui setiap 10 detik
+        }
+
+
         /**
          * Renders the platform cards based on the current filters.
          */
@@ -894,7 +1045,7 @@
 
             if (filteredPlatforms.length === 0) {
                 platformGrid.innerHTML = `
-                    <div class="md:col-span-2 xl:col-span-3 text-center py-8 text-slate-500">
+                    <div class="md:col-span-2 xl:col-span-3 text-center py-8 text-gray-400">
                         <p class="text-xl font-semibold mb-2">Tidak ada platform yang ditemukan.</p>
                         <p>Coba sesuaikan filter atau kata kunci pencarian Anda.</p>
                     </div>
@@ -904,20 +1055,20 @@
 
             filteredPlatforms.forEach(platform => {
                 const card = document.createElement('div');
-                card.className = 'platform-card bg-white rounded-xl shadow-md p-6 flex flex-col justify-between border border-slate-200';
+                card.className = 'platform-card bg-gray-800 rounded-xl shadow-md p-6 flex flex-col justify-between border border-gray-700'; /* Warna kartu disesuaikan */
                 card.innerHTML = `
                     <div>
-                        <h2 class="text-xl font-semibold text-sky-700 mb-2">${platform.name}</h2>
-                        <p class="text-sm text-slate-500 mb-3 capitalize">${platform.category.replace('-', ' ')}</p>
-                        <ul class="list-disc list-inside text-slate-600 text-sm mb-4 space-y-1">
+                        <h2 class="text-xl font-semibold text-sky-400 mb-2">${platform.name}</h2> <!-- Warna judul disesuaikan -->
+                        <p class="text-sm text-gray-400 mb-3 capitalize">${platform.category.replace('-', ' ')}</p> <!-- Warna teks disesuaikan -->
+                        <ul class="list-disc list-inside text-gray-300 text-sm mb-4 space-y-1"> <!-- Warna teks disesuaikan -->
                             ${platform.features.map(feature => `<li>${feature}</li>`).join('')}
                         </ul>
-                        <p class="text-sm text-slate-600 mb-2"><strong class="font-medium">Ketersediaan Data Indonesia:</strong> ${platform.availability}</p>
-                        <p class="text-sm text-slate-600 mb-4"><strong class="font-medium">Integrasi:</strong> ${platform.integration}</p>
+                        <p class="text-sm text-gray-300 mb-2"><strong class="font-medium">Ketersediaan Data Indonesia:</strong> ${platform.availability}</p> <!-- Warna teks disesuaikan -->
+                        <p class="text-sm text-gray-300 mb-4"><strong class="font-medium">Integrasi:</strong> ${platform.integration}</p> <!-- Warna teks disesuaikan -->
                     </div>
                     <div>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            ${platform.tags.map(tag => `<span class="bg-sky-100 text-sky-700 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag.replace('-', ' ')}</span>`).join('')}
+                            ${platform.tags.map(tag => `<span class="bg-sky-700 text-sky-100 text-xs font-medium px-2.5 py-0.5 rounded-full">${tag.replace('-', ' ')}</span>`).join('')} <!-- Warna tag disesuaikan -->
                         </div>
                         <a href="${platform.link}" target="_blank" rel="noopener noreferrer" class="inline-block bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-200 ease-in-out">
                             Kunjungi Platform
@@ -937,7 +1088,7 @@
 
             categories.forEach(category => {
                 const button = document.createElement('button');
-                button.className = `px-4 py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 ${activeCategory === category ? 'bg-sky-600 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`;
+                button.className = `px-4 py-2 rounded-full text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 ${activeCategory === category ? 'bg-sky-600 text-white shadow-md' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'}`; /* Warna tombol disesuaikan */
                 button.textContent = category === 'all' ? 'Semua Kategori' : category.replace('-', ' ').charAt(0).toUpperCase() + category.replace('-', ' ').slice(1);
                 button.dataset.category = category;
                 button.addEventListener('click', () => {
@@ -945,11 +1096,11 @@
                     // Update button styles
                     document.querySelectorAll('#category-filters button').forEach(btn => {
                         if (btn.dataset.category === activeCategory) {
-                            btn.classList.remove('bg-slate-200', 'text-slate-700', 'hover:bg-slate-300');
+                            btn.classList.remove('bg-gray-700', 'text-gray-200', 'hover:bg-gray-600');
                             btn.classList.add('bg-sky-600', 'text-white', 'shadow-md');
                         } else {
                             btn.classList.remove('bg-sky-600', 'text-white', 'shadow-md');
-                            btn.classList.add('bg-slate-200', 'text-slate-700', 'hover:bg-slate-300');
+                            btn.classList.add('bg-gray-700', 'text-gray-200', 'hover:bg-gray-600');
                         }
                     });
                     renderPlatformCards();
@@ -973,8 +1124,8 @@
                 const checkboxContainer = document.createElement('div');
                 checkboxContainer.className = 'flex items-center';
                 checkboxContainer.innerHTML = `
-                    <input type="checkbox" id="feature-${tag}" value="${tag}" class="h-4 w-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2">
-                    <label for="feature-${tag}" class="ml-2 text-sm text-slate-700 capitalize">${tag.replace('-', ' ')}</label>
+                    <input type="checkbox" id="feature-${tag}" value="${tag}" class="h-4 w-4 text-sky-500 border-gray-500 rounded focus:ring-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-700"> <!-- Warna checkbox disesuaikan -->
+                    <label for="feature-${tag}" class="ml-2 text-sm text-gray-300 capitalize">${tag.replace('-', ' ')}</label> <!-- Warna label disesuaikan -->
                 `;
                 const checkbox = checkboxContainer.querySelector('input');
                 checkbox.addEventListener('change', (event) => {
@@ -1023,7 +1174,7 @@
                         legend: {
                             position: 'right',
                             labels: {
-                                color: '#475569', // slate-600
+                                color: '#cbd5e1', // text-gray-300 for legend labels
                                 font: {
                                     family: 'Inter',
                                     size: 14
@@ -1118,6 +1269,7 @@
             initFeatureFilters();
             initCategoryChart();
             renderPlatformCards();
+            initTickers(); // Inisialisasi ticker tape
         });
     </script>
 </body>
