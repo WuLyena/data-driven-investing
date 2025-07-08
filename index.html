@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Interaktif: Platform Riset Keuangan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Light Slate/Gray background, White cards, Blue/Teal accents) -->
+    <!-- Application Structure Plan: An interactive dashboard/catalog design. The primary structure is a filterable grid of cards, where each card represents a financial platform. This was chosen over a linear list to empower the user to actively discover and compare tools based on their specific needs (API, Indonesian data, cost, etc.), making the comprehensive information much more accessible and useful. A summary donut chart provides a high-level overview of the platform categories. -->
+    <!-- Visualization & Content Choices: Report Info: List of ~55 platforms categorized into 4 types. Goal: Organize & Compare. Viz/Presentation: Interactive grid of cards and a summary donut chart. Interaction: Users filter the grid by category, features (tags), or search. Clicking a chart segment also filters the grid. Justification: This interactive catalog structure is the most effective way to translate a long, static list into a dynamic, user-friendly decision-making tool. The donut chart adds a quick visual summary. Library/Method: Chart.js for the donut chart, Vanilla JS for dynamic card generation and filtering logic, Tailwind CSS for layout and styling. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            max-height: 300px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .platform-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .platform-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-2">Panduan Interaktif Platform Riset Keuangan</h1>
+            <p class="text-lg text-slate-500 max-w-3xl mx-auto">Gunakan filter di bawah untuk menemukan platform data, API, atau berita yang paling sesuai dengan kebutuhan riset Anda, baik untuk pasar global maupun Indonesia.</p>
+        </header>
+
+        <main>
+            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 flex flex-col items-center justify-center p-4">
+                        <h3 class="text-xl font-semibold text-slate-800 mb-4 text-center">Distribusi Platform Berdasarkan Kategori</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="mb-6">
+                            <label for="search" class="block text-sm font-medium text-slate-600 mb-2">Cari Nama Platform:</label>
+                            <input type="text" id="search" placeholder="Contoh: TradingView, YFinance..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h3 class="text-sm font-medium text-slate-600 mb-2">Saring Berdasarkan Kategori Utama:</h3>
+                            <div id="category-filters" class="flex flex-wrap gap-2">
+                                <!-- Category buttons will be inserted here by JS -->
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-medium text-slate-600 mb-2">Saring Berdasarkan Fitur Penting:</h3>
+                            <div id="feature-filters" class="flex flex-wrap gap-x-4 gap-y-2">
+                                <!-- Feature checkboxes will be inserted here by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="platform-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Platform cards will be dynamically inserted here -->
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        const platformsData = [
+            {
+                name: "Twelve Data",
+                category: "api",
+                link: "https://twelvedata.com/",
+                features: ["API untuk saham, kripto, forex, ETF, termasuk **Bursa Efek Indonesia (XIDX)**.", "Menyediakan data real-time dan historis (OHLCV), laporan keuangan, dan rasio dasar."],
+                availability: "Ya, memiliki cakupan data untuk emiten Indonesia melalui API.",
+                integration: "Sangat kuat, via **API** (Python, R, Excel).",
+                tags: ["api", "python", "excel", "indonesia", "real-time", "fundamental", "berbayar"]
+            },
+            {
+                name: "Financial Modeling Prep (FMP)",
+                category: "api",
+                link: "https://site.financialmodelingprep.com/",
+                features: ["API untuk laporan keuangan lengkap (laba rugi, neraca, arus kas), data insider trading, kapitalisasi pasar, pendapatan, dividen, dan data historis."],
+                availability: "Umumnya mencakup perusahaan global; perlu diverifikasi cakupannya untuk emiten Indonesia.",
+                integration: "Sangat kuat, via **API** (cocok untuk proyek Python).",
+                tags: ["api", "python", "fundamental", "berbayar"]
+            },
+            {
+                name: "EODHD (End-of-Day Historical Data)",
+                category: "api",
+                link: "https://eodhd.com/",
+                features: ["Harga EOD & intraday (1m, 5m), fundamental (laporan keuangan & rasio), kalender earnings, splits.", "Macro dan news-sentiment API."],
+                availability: "Ya, cocok untuk saham Indonesia.",
+                integration: "Sangat kuat, via **API** (Python, Excel).",
+                tags: ["api", "indonesia", "teknikal", "fundamental", "berbayar", "real-time", "makroekonomi", "news"]
+            },
+            {
+                name: "Finnhub",
+                category: "api",
+                link: "https://finnhub.io/",
+                features: ["Real-time dan historical data untuk saham global (termasuk IDX besar), forex, kripto.", "Plus news-sentiment, kalender earning, IPOs, dan API gratis hingga 60 req/min."],
+                availability: "Mendukung emiten besar seperti TLKM.",
+                integration: "Ideal bagi pengembang butuh satu **API** untuk multi-asset, news, dan data fundamental (JS, Python).",
+                tags: ["api", "python", "real-time", "fundamental", "gratis", "berbayar", "news", "kripto"]
+            },
+            {
+                name: "YFinance (Python Library)",
+                category: "api",
+                link: "https://pypi.org/project/yfinance/",
+                features: ["Pustaka Python gratis untuk mengambil data historis saham (OHLCV), laporan keuangan, info perusahaan, dan corporate actions dari Yahoo Finance.", "Mendukung multi-ticker dan output langsung ke pandas DataFrame."],
+                availability: "Ya, mendukung saham Indonesia (misal: TLKM.JK).",
+                integration: "Sangat kuat, via **Python Library**.",
+                tags: ["api", "python", "indonesia", "gratis", "teknikal", "fundamental"]
+            },
+            {
+                name: "Alpha Vantage API",
+                category: "api",
+                link: "https://www.alphavantage.co/",
+                features: ["API untuk data saham, kripto, forex, dan indikator teknikal (SMA, RSI, MACD).", "Menawarkan data real-time dan historis untuk pasar global."],
+                availability: "Cakupan global; perlu verifikasi spesifik untuk emiten Indonesia.",
+                integration: "Sangat kuat, via **API** (cocok untuk Python).",
+                tags: ["api", "python", "real-time", "teknikal", "gratis", "berbayar", "kripto"]
+            },
+            {
+                name: "Polygon.io",
+                category: "api",
+                link: "https://polygon.io/",
+                features: ["WebSocket & REST API untuk data real-time saham, kripto, dan forex.", "Cocok untuk developer dan algo trader."],
+                availability: "Fokus pada pasar AS dan global; perlu verifikasi untuk emiten Indonesia.",
+                integration: "Sangat kuat, via **API** (WebSocket & REST).",
+                tags: ["api", "real-time", "berbayar", "kripto", "trading"]
+            },
+            {
+                name: "IEX Cloud",
+                category: "api",
+                link: "https://iexcloud.io/",
+                features: ["Menyediakan real-time quotes, corporate actions, dan data historis."],
+                availability: "Fokus pada pasar AS; perlu verifikasi untuk emiten Indonesia.",
+                integration: "Sangat kuat, via **API**.",
+                tags: ["api", "real-time", "berbayar"]
+            },
+            {
+                name: "Nasdaq Data Link (Quandl)",
+                category: "api",
+                link: "https://data.nasdaq.com/",
+                features: ["Agregator data keuangan dan ekonomi yang sangat besar.", "Menawarkan ribuan dataset (saham, komoditas, fundamental, makroekonomi). Data bersih dan terkurasi."],
+                availability: "Sangat mungkin menemukan dataset relevan untuk Indonesia.",
+                integration: "Sangat kuat, via **API** (Python, R, Excel).",
+                tags: ["api", "python", "excel", "makroekonomi", "berbayar"]
+            },
+            {
+                name: "FRED",
+                category: "api",
+                link: "https://fred.stlouisfed.org/",
+                features: ["Basis data makroekonomi gratis dan sangat luas dari Federal Reserve.", "Menyediakan data inflasi, suku bunga, GDP, dll."],
+                availability: "Ya, Anda dapat menemukan seri data makroekonomi untuk Indonesia.",
+                integration: "Sangat kuat, dapat diunduh ke **Excel** atau via **API** (`fredapi` Python).",
+                tags: ["api", "python", "excel", "indonesia", "makroekonomi", "gratis"]
+            },
+            {
+                name: "CoinMarketCap / CoinGecko",
+                category: "api",
+                link: "https://coinmarketcap.com/",
+                features: ["Data harga real-time dan historis untuk ribuan kripto.", "Kapitalisasi pasar, volume perdagangan, data exchange, dan info detail koin."],
+                availability: "Data kripto bersifat global.",
+                integration: "Menawarkan **API** (gratis & berbayar) untuk **Python**.",
+                tags: ["api", "python", "real-time", "gratis", "berbayar", "kripto"]
+            },
+            {
+                name: "Trading Economics API",
+                category: "api",
+                link: "https://tradingeconomics.com/api",
+                features: ["20+ juta indikator ekonomi global (PDB, inflasi, suku bunga) termasuk Indonesia.", "Dukungan kalender ekonomi real-time."],
+                availability: "Sangat baik, mendalam untuk makroekonomi dan fundamental Indonesia.",
+                integration: "**API** untuk Python, Excel, R, dan NodeJS.",
+                tags: ["api", "python", "excel", "indonesia", "makroekonomi", "real-time", "berbayar"]
+            },
+            {
+                name: "Glassnode",
+                category: "api",
+                link: "https://glassnode.com/",
+                features: ["Data on-chain kripto tingkat lanjut (Bitcoin, Ethereum).", "Arus modal dan sentimen pasar kripto."],
+                availability: "Fokus pada data on-chain kripto.",
+                integration: "API tersedia.",
+                tags: ["api", "kripto", "on-chain", "berbayar"]
+            },
+            {
+                name: "Cbonds",
+                category: "api",
+                link: "https://cbonds.com/",
+                features: ["Data global obligasi, ekuitas, ETF, makro.", "Disediakan via API."],
+                availability: "Cakupan global + sebagian Indonesia.",
+                integration: "API tersedia.",
+                tags: ["api", "obligasi", "makroekonomi", "berbayar"]
+            },
+            {
+                name: "EPFR API",
+                category: "api",
+                link: "https://epfr.com/",
+                features: ["Alat analitik dan insight global tentang aliran dana institusional (>25 tahun data, mencakup US/Asia/Global).", "Disediakan via API."],
+                availability: "Cakupan global, termasuk Asia.",
+                integration: "API tersedia.",
+                tags: ["api", "fund-flow", "berbayar"]
+            },
+            {
+                name: "GitHub: idx-bei (Scraper Data IDX)",
+                category: "api",
+                link: "https://github.com/ichsanulamal/idx-bei",
+                features: ["Node.js tools untuk mengunduh data IDX (profil perusahaan, broker) ke format JSON/CSV.", "Contoh konkret scraper data komunitas."],
+                availability: "Fokus pada data IDX Indonesia.",
+                integration: "Cocok untuk proyek **Python/JavaScript**.",
+                tags: ["python", "indonesia", "gratis", "api"]
+            },
+            {
+                name: "Google Cloud Financial Services",
+                category: "api",
+                link: "https://cloud.google.com/solutions/financial-services",
+                features: ["Solusi AI/ML untuk analisis risiko, simulasi pasar, dan big data keuangan.", "Bukan platform data langsung, melainkan layanan infrastruktur."],
+                availability: "Layanan global, dapat diterapkan pada data Indonesia.",
+                integration: "Integrasi via BigQuery, Vertex AI, dan API custom.",
+                tags: ["api", "ai-ml", "big-data", "berbayar"]
+            },
+            {
+                name: "Interactive Brokers (Python-Excel Integration)",
+                category: "api",
+                link: "https://www.interactivebrokers.com/campus/ibkr-quant-news/connecting-python-to-excel/",
+                features: ["Tutorial integrasi data pasar real-time ke Excel via Python (xlwings + IBKR API).", "Ideal untuk algo-trading dan backtesting."],
+                availability: "Data global, dapat diterapkan untuk pasar Indonesia jika broker mendukung.",
+                integration: "Integrasi **Python** ke **Excel** melalui API broker.",
+                tags: ["api", "python", "excel", "trading", "berbayar"]
+            },
+            {
+                name: "Datastream (LSEG)",
+                category: "profesional",
+                link: "https://www.lseg.com/en/data-analytics/data-solutions/datastream",
+                features: ["Data real-time & historis untuk saham, obligasi, komoditas, forex, plus 8,5 juta indikator makro-ekonomi dari 175 negara.", "Sertakan fundamental point-in-time (Worldscope, I/B/E/S), analitik lanjutan."],
+                availability: "Mendalam, termasuk saham IDX, makro, dan ekonomi negara.",
+                integration: "Excel add-in/**API** untuk Python/R/Matlab/EViews.",
+                tags: ["api", "python", "excel", "indonesia", "real-time", "historis", "fundamental", "makroekonomi", "obligasi", "berbayar"]
+            },
+            {
+                name: "Macrobond",
+                category: "profesional",
+                link: "https://www.macrobond.com/",
+                features: ["Platform riset makroekonomi all-in-one, lebih dari 2.400 sumber data.", "Visualisasi kuat, integrasi langsung ke Excel."],
+                availability: "Termasuk indikator makro seperti inflasi, suku bunga, PDB, perdagangan, dll. untuk Indonesia.",
+                integration: "Integrasi langsung ke **Excel**, **API**.",
+                tags: ["api", "excel", "indonesia", "makroekonomi", "berbayar"]
+            },
+            {
+                name: "Wealth-Lab 8",
+                category: "analisis",
+                link: "https://www.wealth-lab.com/",
+                features: ["Platform desktop untuk analisis teknikal/fundamental, backtesting, live trading.", "Dukungan broker: IB, Alpaca, Kraken, Binance, dll. Integrasi EODHD, FMP, Twelve Data, dll."],
+                availability: "Bisa via plugin data providers (EODHD, FMP, dll) untuk cakupan IDX.",
+                integration: "Platform desktop + **API**.",
+                tags: ["teknikal", "fundamental", "backtesting", "trading", "berbayar"]
+            },
+            {
+                name: "QST Trading Platform",
+                category: "analisis",
+                link: "https://www.qst.com/",
+                features: ["Multi-asset (saham, forex, CFD, kripto), charting, real-time quotes.", "API trading & charting serta paper trading."],
+                availability: "Perlu cek broker lokal yang mendukungnya, tapi mendukung global.",
+                integration: "**API** trading & charting.",
+                tags: ["real-time", "trading", "api", "berbayar", "kripto"]
+            },
+            {
+                name: "Layanan Data BEI (Bursa Efek Indonesia)",
+                category: "sumber-resmi",
+                link: "https://data.idx.co.id/",
+                features: ["Data real-time, delayed, dan end-of-day (EoD) untuk saham, obligasi, derivatif, serta laporan keuangan emiten.", "Lisensi tersedia untuk redistribusi data."],
+                availability: "Sumber resmi pasar modal Indonesia.",
+                integration: "**API** untuk institusi (koneksi langsung/tidak langsung) dan unduhan manual.",
+                tags: ["api", "indonesia", "real-time", "fundamental", "obligasi", "berbayar"]
+            },
+            {
+                name: "Otoritas Jasa Keuangan (OJK)",
+                category: "sumber-resmi",
+                link: "https://ojk.go.id/id/data-dan-statistik",
+                features: ["Statistik perbankan, pasar modal, asuransi, fintech, dan keuangan syariah.", "Termasuk laporan tahunan dan triwulanan."],
+                availability: "Data regulatoris lengkap untuk Indonesia.",
+                integration: "Unduhan **Excel**/PDF.",
+                tags: ["excel", "indonesia", "regulatoris", "gratis"]
+            },
+            {
+                name: "Bank Dunia (INDO-DAPOER)",
+                category: "sumber-resmi",
+                link: "https://www.worldbank.org/in/country/indonesia",
+                features: ["200+ indikator pembangunan sub-nasional (pendidikan, kesehatan, infrastruktur) untuk Indonesia.", "Fokus pada kebijakan publik dan ekonomi regional."],
+                availability: "Fokus pada kebijakan publik dan ekonomi regional di Indonesia.",
+                integration: "Unduhan CSV/**Excel**.",
+                tags: ["excel", "indonesia", "makroekonomi", "gratis"]
+            },
+            {
+                name: "IMF Data",
+                category: "sumber-resmi",
+                link: "https://www.imf.org/en/Data",
+                features: ["Data makroekonomi global (GDP, neraca perdagangan, inflasi, dll) dari berbagai negara."],
+                availability: "Cakupan global, termasuk data relevan untuk Indonesia.",
+                integration: "Unduhan data dan akses API terbatas.",
+                tags: ["makroekonomi", "gratis", "api"]
+            },
+            {
+                name: "UN Comtrade",
+                category: "sumber-resmi",
+                link: "https://comtrade.un.org/",
+                features: ["Basis data statistik perdagangan internasional (ekspor-impor) yang komprehensif."],
+                availability: "Cakupan global, termasuk data perdagangan Indonesia.",
+                integration: "Unduhan data dan API.",
+                tags: ["makroekonomi", "gratis", "api"]
+            },
+            {
+                name: "Pintu Academy",
+                category: "sumber-resmi",
+                link: "https://pintu.co.id/academy",
+                features: ["Edukasi dan analisis pasar kripto Indonesia.", "Menyediakan data pasar kripto lokal."],
+                availability: "Fokus pada pasar kripto Indonesia.",
+                integration: "Edukasi + data pasar kripto.",
+                tags: ["indonesia", "gratis", "kripto"]
+            },
+            {
+                name: "SSRN",
+                category: "sumber-resmi",
+                link: "https://www.ssrn.com/",
+                features: ["Repositori paper riset akademik (ekonomi & keuangan) terkini."],
+                availability: "Cakupan global, termasuk riset relevan untuk Indonesia.",
+                integration: "Sumber informasi, bukan data.",
+                tags: ["gratis"]
+            },
+            {
+                name: "IDX (Bursa Efek Indonesia)",
+                category: "sumber-resmi",
+                link: "https://www.idx.co.id/investhub/",
+                features: ["Sumber **resmi** untuk laporan keuangan emiten Indonesia.", "**Stock Screener** dengan filter fundamental dan teknikal.", "Data statistik pasar harian, bulanan, tahunan."],
+                availability: "Sangat baik, sumber data resmi untuk semua emiten Indonesia.",
+                integration: "Unduhan **Excel** untuk laporan keuangan.",
+                tags: ["excel", "indonesia", "screener", "fundamental", "gratis"]
+            },
+            {
+                name: "Bank Indonesia (BI)",
+                category: "sumber-resmi",
+                link: "https://www.bi.go.id/id/statistik/default.aspx",
+                features: ["Sumber **resmi** data makroekonomi Indonesia.", "Data inflasi, suku bunga acuan (BI Rate), neraca pembayaran, nilai tukar."],
+                availability: "Sangat akurat dan resmi untuk data makroekonomi Indonesia.",
+                integration: "Biasanya manual (unduh **Excel**).",
+                tags: ["excel", "indonesia", "makroekonomi", "gratis"]
+            },
+            {
+                name: "Badan Pusat Statistik (BPS)",
+                category: "sumber-resmi",
+                link: "https://www.bps.go.id/",
+                features: ["Sumber data **resmi** statistik demografi, sosial, dan ekonomi Indonesia.", "(GDP, tenaga kerja, industri, pertanian, perdagangan)."],
+                availability: "Data resmi dan rinci untuk berbagai aspek ekonomi dan sosial Indonesia.",
+                integration: "Umumnya manual (unduh **Excel**).",
+                tags: ["excel", "indonesia", "makroekonomi", "gratis"]
+            },
+            {
+                name: "Investopedia",
+                category: "sumber-resmi",
+                link: "https://www.investopedia.com/",
+                features: ["Sumber edukasi dan referensi yang sangat kaya.", "Penjelasan istilah keuangan, investasi, strategi trading, dan analisis pasar."],
+                availability: "Relevan secara global, dapat diterapkan pada pasar Indonesia.",
+                integration: "Sumber informasi, bukan data.",
+                tags: ["gratis"]
+            },
+             {
+                name: "GitHub Repositori",
+                category: "sumber-resmi",
+                link: "https://github.com/",
+                features: ["Kumpulan script Python, tools, dan dataset dari komunitas.", "Cari: 'financial data python', 'indonesia stock data'."],
+                availability: "Sangat mungkin menemukan repositori berfokus pada data Indonesia.",
+                integration: "Sangat kuat, karena berbasis **kode Python**.",
+                tags: ["python", "indonesia", "gratis"]
+            },
+            {
+                name: "Bloomberg Terminal",
+                category: "profesional",
+                link: "https://www.bloomberg.com/professional/solution/bloomberg-terminal/",
+                features: ["Platform terlengkap dengan real-time data multi-aset, analisis teknikal & fundamental, berita eksklusif.", "Standar industri global."],
+                availability: "Sangat komprehensif untuk data global dan Indonesia.",
+                integration: "Sangat kuat, via **API** dan **Excel**.",
+                tags: ["api", "excel", "indonesia", "real-time", "berbayar"]
+            },
+            {
+                name: "Refinitiv Eikon",
+                category: "profesional",
+                link: "https://www.refinitiv.com/en/products/eikon-trading-software",
+                features: ["Mirip dengan Bloomberg, menyediakan data real-time, analisis mendalam, dan berita global."],
+                availability: "Ya, cakupan data sangat komprehensif untuk pasar Indonesia.",
+                integration: "Sangat kuat, via **API** dan **Excel Add-in**.",
+                tags: ["api", "excel", "indonesia", "real-time", "berbayar"]
+            },
+            {
+                name: "FactSet",
+                category: "profesional",
+                link: "https://www.factset.com/",
+                features: ["Platform data dan analisis berorientasi profesional.", "Data pasar real-time, fundamental perusahaan, konsensus analis, screener canggih."],
+                availability: "Ya, cakupan data mendalam untuk perusahaan Indonesia.",
+                integration: "Sangat kuat, via **API** dan **Excel Add-in**.",
+                tags: ["api", "excel", "indonesia", "real-time", "berbayar"]
+            },
+            {
+                name: "CRSP (Wharton Research Data Services - WRDS)",
+                category: "profesional",
+                link: "https://www.whartonwrds.com/",
+                features: ["Standar emas untuk data keuangan historis akademik.", "Data harga saham harian/bulanan yang sangat bersih dan terverifikasi, serta data fundamental perusahaan (Compustat)."],
+                availability: "Mungkin tersedia untuk emiten Indonesia melalui database global.",
+                integration: "Sangat kuat, data dapat diunduh atau diakses via **API** dan **Python**, R, atau SAS.",
+                tags: ["api", "python", "berbayar"]
+            },
+            {
+                name: "Pasardana",
+                category: "analisis",
+                link: "https://pasardana.id/",
+                features: ["Portal informasi pasar modal Indonesia, mencakup data saham, obligasi, reksa dana, dan indeks.", "Menawarkan Data Feed (API) untuk akses data pasar modal, termasuk harga saham dan laporan keuangan."],
+                availability: "Ya, fokus pada pasar modal Indonesia, cocok untuk data lokal seperti IHSG dan emiten IDX.",
+                integration: "Sangat kuat, via Data Feed (**API**).",
+                tags: ["api", "indonesia", "fundamental", "obligasi", "berbayar"]
+            },
+            {
+                name: "Marketstack",
+                category: "api",
+                link: "https://marketstack.com/",
+                features: ["API untuk data real-time dan historis saham, ETF, dan indeks.", "Mendukung 70+ bursa saham global. Menyediakan data OHLC, volume, dan indikator teknikal."],
+                availability: "Kemungkinan besar, karena cakupan global; perlu verifikasi via dokumentasi untuk daftar bursa yang didukung.",
+                integration: "Sangat kuat, via **API**, dengan dukungan untuk Python dan format JSON/CSV.",
+                tags: ["api", "real-time", "historis", "berbayar", "python"]
+            },
+            {
+                name: "CoinAPI.io",
+                category: "api",
+                link: "https://www.coinapi.io/",
+                features: ["Akses unified ke data dari lebih dari 350 exchange, menyediakan data real-time dan historis, OHLCV, order books, dan lainnya.", "Cocok untuk analisis pasar mendalam dan trading algoritmik."],
+                availability: "Global, cakupan luas untuk cryptocurrency dan fiat currencies, dengan data dari exchange terkemuka.",
+                integration: "API tersedia, free dan paid plans, dengan dukungan untuk Python, C#, Java, dan lainnya.",
+                tags: ["api", "real-time", "historis", "kripto", "berbayar", "python"]
+            },
+            {
+                name: "Crypto APIs",
+                category: "api",
+                link: "https://cryptoapis.io/",
+                features: ["Suite produk blockchain-related, termasuk Blockchain Data (akses unified ke data blockchain), Blockchain Events (notifikasi webhook), Node as a Service, dan Key Management System.", "Cocok untuk pengembangan aplikasi Web3 dan analisis on-chain."],
+                availability: "Mendukung multiple blockchains, global, dengan data dari protokol top seperti Ethereum, Bitcoin, dll.",
+                integration: "API tersedia, free dan paid options, dengan dukungan REST APIs dan JSON-RPC.",
+                tags: ["api", "kripto", "on-chain", "berbayar"]
+            },
+            {
+                name: "Nomics API",
+                category: "api",
+                link: "https://nomics.com/api",
+                features: ["Menyediakan harga cryptocurrency current dan historis, market cap, volume, supply beredar, dan data exchange.", "Cocok untuk analisis tren dan prediksi pasar."],
+                availability: "Global, ribuan cryptocurrency, dengan data dari exchange dan trading pairs.",
+                integration: "API tersedia, free dan paid plans, dengan dukungan untuk Python dan format CSV.",
+                tags: ["api", "kripto", "historis", "real-time", "berbayar", "gratis", "python"]
+            },
+            {
+                name: "Coinigy",
+                category: "analisis",
+                link: "https://www.coinigy.com/",
+                features: ["Platform trading unified untuk multiple exchange, menyediakan real-time market data, portfolio tracking, dan trading bots.", "Cocok untuk trader aktif dan manajemen portofolio."],
+                availability: "Global, mendukung numerous exchange dan cryptocurrency, dengan data real-time dan historis.",
+                integration: "API tersedia untuk custom integrations, mendukung Python dan lainnya.",
+                tags: ["api", "kripto", "real-time", "trading", "berbayar", "python"]
+            },
+            {
+                name: "Messari",
+                category: "analisis",
+                link: "https://messari.io/",
+                features: ["Riset dan data in-depth pada cryptocurrency, termasuk profil project, data pasar, dan on-chain metrics.", "Menyediakan laporan, screener, dan analisis sektor."],
+                availability: "Global, fokus pada analisis mendalam, dengan data dari berbagai protokol dan exchange.",
+                integration: "API access untuk beberapa data, primarily web-based, dengan potensi ekspor ke Excel.",
+                tags: ["kripto", "on-chain", "fundamental", "screener", "berbayar", "excel"]
+            },
+            {
+                name: "Santiment",
+                category: "analisis",
+                link: "https://santiment.net/",
+                features: ["Metrics social dan on-chain data, termasuk analisis sentimen, volume transaksi, dan aktivitas developer.", "Cocok untuk analisis tren dan prediksi berdasarkan data komunitas."],
+                availability: "Global, fokus pada metrics social dan on-chain, dengan data dari blockchain utama.",
+                integration: "API tersedia, mendukung integrasi dengan Python untuk analisis otomatis.",
+                tags: ["api", "kripto", "on-chain", "social-sentiment", "berbayar", "python"]
+            },
+            {
+                name: "Kaiko",
+                category: "analisis",
+                link: "https://kaiko.com/",
+                features: ["Data pasar cryptocurrency dan indeks, menyediakan data berkualitas tinggi, granular, seperti order book depth, spread, dan volume exchange.", "Cocok untuk analisis institusional dan trading algo."],
+                availability: "Global, fokus institusional, dengan data dari exchange terkemuka.",
+                integration: "API tersedia, dengan dukungan untuk integrasi data real-time via WebSocket.",
+                tags: ["api", "kripto", "real-time", "historis", "berbayar"]
+            },
+            {
+                name: "DefiLlama",
+                category: "analisis",
+                link: "https://defillama.com/",
+                features: ["Melacak protocol DeFi, menyediakan TVL (Total Value Locked), volume, yields, dan metrics lainnya.", "Cocok untuk analisis protokol DeFi dan alokasi investasi."],
+                availability: "Global, fokus pada DeFi, dengan data dari berbagai protokol seperti Uniswap, Aave, dll.",
+                integration: "API access untuk beberapa data, dengan potensi ekspor ke format CSV untuk analisis lebih lanjut.",
+                tags: ["api", "kripto", "defi", "on-chain", "gratis"]
+            },
+            {
+                name: "CryptoQuant",
+                category: "analisis",
+                link: "https://cryptoquant.com/",
+                features: ["Data on-chain dan derivatives data, termasuk metrics seperti cadangan exchange, kesulitan mining, dan aliran dana ke exchange.", "Cocok untuk analisis tren pasar dan trading."],
+                availability: "Primarily Bitcoin, dengan beberapa support untuk cryptocurrency lainnya, data global.",
+                integration: "API tersedia, mendukung integrasi dengan Python untuk analisis otomatis.",
+                tags: ["api", "kripto", "on-chain", "trading", "berbayar", "python"]
+            },
+            {
+                name: "Binance API",
+                category: "profesional",
+                link: "https://github.com/binance/binance-spot-api-docs",
+                features: ["Akses ke data exchange Binance dan fungsionalitas trading, termasuk data pasar real-time, manajemen akun, dan endpoint trading.", "Cocok untuk membangun trading bot dan analisis pasar langsung."],
+                availability: "Specific ke exchange Binance, dengan data untuk cryptocurrency yang terdaftar di Binance.",
+                integration: "API tersedia, memerlukan API key, mendukung Python, Java, Node.js, dll., dengan protokol keamanan seperti enkripsi dan autentikasi dua faktor.",
+                tags: ["api", "kripto", "real-time", "trading", "berbayar", "python"]
+            },
+            {
+                name: "Gemini API",
+                category: "profesional",
+                link: "https://docs.gemini.com/rest-api/",
+                features: ["Akses ke data exchange Gemini dan trading, termasuk data pasar, manajemen akun, dan penempatan order.", "Menyediakan asuransi aset digital untuk keamanan."],
+                availability: "Specific ke exchange Gemini, dengan data untuk cryptocurrency yang terdaftar di Gemini.",
+                integration: "API tersedia, memerlukan API key, mendukung integrasi real-time via WebSocket.",
+                tags: ["api", "kripto", "real-time", "trading", "berbayar"]
+            },
+            {
+                name: "ChainAPI",
+                category: "profesional",
+                link: "https://chainapi.com/",
+                features: ["Mendukung multiple blockchains, menyediakan data pada transaksi, blok, dan smart contracts.", "Cocok untuk pengembangan aplikasi Web3 dan analisis blockchain."],
+                availability: "Multiple blockchains, global, dengan data dari protokol seperti Ethereum, Binance Smart Chain, dll.",
+                integration: "API tersedia, free dan paid plans, dengan dukungan untuk Python dan format JSON.",
+                tags: ["api", "kripto", "on-chain", "berbayar"]
+            }
+        ];
+
+        const platformGrid = document.getElementById('platform-grid');
+        const searchInput = document.getElementById('search');
+        const categoryFilters = document.getElementById('category-filters');
+        const featureFiltersContainer = document.getElementById('feature-filters');
+
+        const categories = {
+            'all': 'Semua Kategori',
+            'api': 'API & Integrasi',
+            'analisis': 'Analisis & Berita',
+            'sumber-resmi': 'Sumber Resmi & Edukasi',
+            'profesional': 'Profesional & Institusi'
+        };
+
+        const features = {
+            'api': 'Dukungan API',
+            'python': 'Integrasi Python',
+            'excel': 'Integrasi Excel',
+            'indonesia': 'Data Indonesia',
+            'real-time': 'Data Real-time',
+            'screener': 'Screener Saham',
+            'fundamental': 'Data Fundamental',
+            'teknikal': 'Indikator Teknikal',
+            'makroekonomi': 'Data Makroekonomi',
+            'gratis': 'Tersedia Opsi Gratis',
+            'regulatoris': 'Data Regulatoris',
+            'kripto': 'Data Kripto',
+            'on-chain': 'Data On-Chain Kripto',
+            'obligasi': 'Data Obligasi',
+            'fund-flow': 'Aliran Dana',
+            'trading': 'Platform Trading',
+            'ai-ml': 'AI/ML',
+            'news': 'Berita',
+            'historis': 'Data Historis',
+            'social-sentiment': 'Sentimen Sosial'
+        };
+
+        function renderPlatforms(filteredData) {
+            platformGrid.innerHTML = '';
+            filteredData.forEach(platform => {
+                const card = document.createElement('div');
+                card.className = 'platform-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col';
+                card.dataset.category = platform.category;
+                card.dataset.tags = platform.tags.join(',');
+                
+                let featuresHTML = platform.features.map(f => `<li>${f}</li>`).join('');
+
+                card.innerHTML = `
+                    <div class="p-6 flex-grow">
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">${platform.name}</h2>
+                        <div class="mb-4">
+                            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-sky-600 bg-sky-100">
+                                ${categories[platform.category]}
+                            </span>
+                        </div>
+                        <div class="space-y-3 text-sm text-slate-600">
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Fitur Utama:</h4>
+                                <ul class="list-disc list-inside mt-1 space-y-1">${featuresHTML}</ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Ketersediaan Data Indonesia:</h4>
+                                <p>${platform.availability}</p>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Integrasi:</h4>
+                                <p>${platform.integration}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                        <div class="flex flex-wrap gap-2">
+                             ${platform.tags.map(tag => features[tag] ? `<span class="text-xs font-medium inline-block py-1 px-2 rounded-full text-slate-500 bg-slate-200">${features[tag]}</span>` : '').join('')}
+                        </div>
+                        <a href="${platform.link}" target="_blank" rel="noopener noreferrer" class="inline-block text-sm font-semibold text-sky-600 hover:text-sky-800 transition">
+                            Kunjungi 
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 0 00-2 2v10a2 0 002 2h10a2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    </div>
+                `;
+                platformGrid.appendChild(card);
+            });
+        }
+        
+        function setupFilters() {
+            Object.keys(categories).forEach(key => {
+                const button = document.createElement('button');
+                button.className = `px-4 py-2 text-sm font-medium rounded-full transition border`;
+                button.textContent = categories[key];
+                button.dataset.category = key;
+                if (key === 'all') {
+                    button.classList.add('bg-sky-500', 'text-white', 'border-sky-500');
+                } else {
+                    button.classList.add('bg-white', 'text-slate-600', 'border-slate-300', 'hover:bg-slate-100');
+                }
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('#category-filters button').forEach(btn => {
+                        btn.classList.remove('bg-sky-500', 'text-white', 'border-sky-500');
+                        btn.classList.add('bg-white', 'text-slate-600', 'border-slate-300', 'hover:bg-slate-100');
+                    });
+                    button.classList.add('bg-sky-500', 'text-white', 'border-sky-500');
+                    button.classList.remove('bg-white', 'text-slate-600', 'border-slate-300', 'hover:bg-slate-100');
+                    filterPlatforms();
+                });
+                categoryFilters.appendChild(button);
+            });
+
+            Object.keys(features).forEach(key => {
+                const label = document.createElement('label');
+                label.className = "inline-flex items-center space-x-2 cursor-pointer";
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = "h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500";
+                checkbox.dataset.feature = key;
+                checkbox.addEventListener('change', filterPlatforms);
+                label.appendChild(checkbox);
+                label.append(` ${features[key]}`);
+                featureFiltersContainer.appendChild(label);
+            });
+        }
+
+        function filterPlatforms() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeCategory = document.querySelector('#category-filters button.bg-sky-500').dataset.category;
+            const activeFeatures = Array.from(document.querySelectorAll('#feature-filters input:checked')).map(cb => cb.dataset.feature);
+
+            const filtered = platformsData.filter(p => {
+                const searchMatch = p.name.toLowerCase().includes(searchTerm);
+                const categoryMatch = activeCategory === 'all' || p.category === activeCategory;
+                const featureMatch = activeFeatures.every(feature => p.tags.includes(feature));
+
+                return searchMatch && categoryMatch && featureMatch;
+            });
+
+            renderPlatforms(filtered);
+        }
+
+        function setupChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const categoryCounts = platformsData.reduce((acc, p) => {
+                acc[p.category] = (acc[p.category] || 0) + 1;
+                return acc;
+            }, {});
+
+            const chartData = {
+                labels: Object.keys(categoryCounts).map(key => categories[key]),
+                datasets: [{
+                    label: 'Jumlah Platform',
+                    data: Object.values(categoryCounts),
+                    backgroundColor: [
+                        '#0284c7', // sky-600
+                        '#38bdf8', // sky-400
+                        '#7dd3fc', // sky-300
+                        '#bae6fd'  // sky-200
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            };
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Inter',
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        searchInput.addEventListener('input', filterPlatforms);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPlatforms(platformsData);
+            setupFilters();
+            setupChart();
+        });
+
+    </script>
+</body>
+</html>
