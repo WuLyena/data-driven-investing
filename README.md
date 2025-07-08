@@ -45,4 +45,4 @@ Data Ticker Tape: Data harga saham dan kripto yang ditampilkan pada ticker tape 
 
 Aksesibilitas Data: Aplikasi ini tidak terhubung ke API data pasar sungguhan. Semua data platform (nama, fitur, dll.) sudah tertanam dalam kode JavaScript.
 
-Selamat menggunakan Panduan Interaktif Platform Riset Keuangan ini!
+Selamat menggunakan Panduan Interaktif Platform Riset ini!
