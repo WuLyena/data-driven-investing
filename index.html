@@ -74,19 +74,34 @@
             z-index: 1000; /* Pastikan di atas konten lain */
         }
 
-        .ticker-tape span {
-            display: inline-block;
-            padding-right: 2rem; /* Jarak antar item di ticker */
-            animation: scroll-left 30s linear infinite; /* Animasi scrolling */
+        .ticker-content {
+            display: inline-block; /* Penting agar teks berjalan secara horizontal */
+            /* Animasi akan diterapkan secara dinamis di JS */
         }
 
-        /* Keyframes untuk animasi scrolling */
+        .ticker-item {
+            display: inline-block; /* Pastikan setiap item tidak memecah baris */
+            /* Jarak antar item diterapkan pada innerHTML dari ticker-item */
+            transition: opacity 0.3s ease-in-out; /* Transisi halus untuk perubahan individual */
+        }
+
+        /* Keyframes untuk animasi scrolling ke kiri (RTL) */
         @keyframes scroll-left {
             0% {
-                transform: translateX(100%);
+                transform: translateX(0%);
             }
             100% {
-                transform: translateX(-100%);
+                transform: translateX(-50%); /* Bergerak sejauh 50% lebar konten untuk loop mulus */
+            }
+        }
+
+        /* Keyframes untuk animasi scrolling ke kanan (LTR) */
+        @keyframes scroll-right {
+            0% {
+                transform: translateX(-50%); /* Mulai dari posisi -50% untuk loop mulus */
+            }
+            100% {
+                transform: translateX(0%);
             }
         }
 
@@ -100,13 +115,13 @@
 
     <!-- Ticker Tape Atas -->
     <div id="top-ticker" class="ticker-tape top-0">
-        <span></span>
+        <div class="ticker-content top-ticker-animation"></div>
     </div>
 
     <div class="container mx-auto p-4 md:p-8">
         
         <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-bold text-sky-400 mb-4 tracking-tight">Panduan Interaktif Platform Riset Keuangan</h1> <!-- Warna judul disesuaikan -->
+            <h1 class="text-4xl md:text-5xl font-bold text-sky-400 mb-4 tracking-tight">Asal Loe Tw Y Dick!</h1> <!-- Warna judul disesuaikan -->
             <p class="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">Gunakan filter di bawah untuk menemukan platform data, API, atau berita yang paling sesuai dengan kebutuhan riset Anda, baik untuk pasar global maupun Indonesia.</p>
         </header>
 
@@ -123,7 +138,7 @@
                     <div class="lg:col-span-2">
                         <div class="mb-6 pb-4 border-b border-gray-700"> <!-- Warna border disesuaikan -->
                             <label for="search" class="block text-sm font-medium text-gray-300 mb-2">Cari Nama Platform:</label> <!-- Warna label disesuaikan -->
-                            <input type="text" id="search" placeholder="Contoh: TradingView, YFinance..." class="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition bg-gray-700 text-gray-100 placeholder-gray-400"> <!-- Warna input disesuaikan -->
+                            <input type="text" id="search" placeholder="kok yang gerak gerak ga sesuai market ril % nya? *G ush bct gue di banned Yfinance" class="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition bg-gray-700 text-gray-100 placeholder-gray-400"> <!-- Warna input disesuaikan -->
                         </div>
                         
                         <div class="mb-6 pb-4 border-b border-gray-700"> <!-- Warna border disesuaikan -->
@@ -152,7 +167,7 @@
 
     <!-- Ticker Tape Bawah -->
     <div id="bottom-ticker" class="ticker-tape bottom-0">
-        <span></span>
+        <div class="ticker-content bottom-ticker-animation"></div>
     </div>
 
     <script>
@@ -603,7 +618,7 @@
                 category: "analisis",
                 link: "https://cryptoquant.com/",
                 features: ["Data on-chain dan derivatives data, termasuk metrics seperti cadangan exchange, kesulitan mining, dan aliran dana ke exchange.", "Cocok untuk analisis tren pasar dan trading."],
-                availability: "Primarily Bitcoin, dengan beberapa support untuk cryptocurrency lainnya, data global.",
+                availability: "Primarily Bitcoin, dengan beberapa support for cryptocurrency lainnya, data global.",
                 integration: "API tersedia, mendukung integrasi dengan Python untuk analisis otomatis.",
                 tags: ["api", "kripto", "on-chain", "trading", "berbayar", "python"]
             },
@@ -929,100 +944,122 @@
         const sampleCryptos = ["BTC", "ETH", "BNB", "XRP", "SOL", "ADA", "DOGE", "SHIB", "DOT", "LINK"];
 
         /**
-         * Menghasilkan harga acak untuk simulasi ticker.
-         * @param {number} min - Harga minimum.
-         * @param {number} max - Harga maksimum.
-         * @returns {number} Harga acak.
+         * Menghasilkan perubahan persentase acak untuk simulasi ticker.
+         * @param {number} min - Perubahan persentase minimum.
+         * @param {number} max - Perubahan persentase maksimum.
+         * @returns {number} Perubahan persentase acak.
          */
-        function generateRandomPrice(min, max) {
+        function generateRandomPercentageChange(min, max) {
             return (Math.random() * (max - min) + min);
         }
 
         /**
-         * Memformat harga menjadi string mata uang.
-         * @param {number} price - Harga.
-         * @param {string} currency - Simbol mata uang (misal: "Rp", "$").
-         * @returns {string} Harga yang diformat.
+         * Membuat INNER HTML untuk satu item ticker (misalnya, "BBCA +1.23%").
+         * @param {string} asset - Simbol saham/kripto.
+         * @returns {string} String HTML untuk konten item.
          */
-        function formatPrice(price, currency = '') {
-            return `${currency}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        }
+        function generateTickerItemContent(asset) {
+            let change;
+            let changeColorClass = '';
 
-        /**
-         * Membuat konten ticker tape dengan data saham dan kripto acak.
-         * @returns {string} String HTML untuk ticker tape.
-         */
-        function createTickerContent() {
-            let content = '';
-            const numItems = 15; // Jumlah item yang akan ditampilkan di ticker
-            const allAssets = [...sampleStocks, ...sampleCryptos];
-
-            for (let i = 0; i < numItems; i++) {
-                const asset = allAssets[Math.floor(Math.random() * allAssets.length)];
-                let price;
-                let change;
-                let currencySymbol = '';
-                let changeClass = '';
-
-                if (sampleStocks.includes(asset)) {
-                    // Harga saham simulasi (misal: puluhan ribu hingga ratusan ribu IDR)
-                    price = generateRandomPrice(2000, 100000);
-                    currencySymbol = 'Rp';
-                    change = generateRandomPrice(-5, 5); // Perubahan persentase
-                } else {
-                    // Harga kripto simulasi (misal: ribuan hingga puluhan ribu USD)
-                    price = generateRandomPrice(500, 50000);
-                    currencySymbol = '$';
-                    change = generateRandomPrice(-10, 10); // Perubahan persentase
-                }
-
-                if (change > 0) {
-                    changeClass = 'text-green-400'; // Hijau untuk naik
-                } else if (change < 0) {
-                    changeClass = 'text-red-400'; // Merah untuk turun
-                } else {
-                    changeClass = 'text-gray-400'; // Abu-abu untuk stabil
-                }
-
-                content += `<span class="inline-flex items-center">
-                                <span class="font-bold mr-1">${asset}</span>
-                                <span class="mr-1">${formatPrice(price, currencySymbol)}</span>
-                                <span class="${changeClass} text-xs">${change.toFixed(2)}%</span>
-                            </span>`;
+            if (sampleStocks.includes(asset)) {
+                change = generateRandomPercentageChange(-5, 5); // Perubahan persentase untuk saham
+            } else {
+                change = generateRandomPercentageChange(-10, 10); // Perubahan persentase untuk kripto
             }
-            // Duplikasi konten agar animasi scrolling mulus
-            return content + content;
+
+            if (change > 0) {
+                changeColorClass = 'text-green-400'; // Hijau untuk naik
+            } else if (change < 0) {
+                changeColorClass = 'text-red-400'; // Merah untuk turun
+            } else {
+                changeColorClass = 'text-gray-400'; // Abu-abu untuk stabil
+            }
+
+            // Hanya menampilkan simbol aset dan perubahan persentase
+            return `<span class="font-bold">${asset}</span> <span class="${changeColorClass} text-xs">${change.toFixed(2)}%</span> &nbsp;&nbsp;&nbsp;&nbsp;`; // Tambahkan spasi
         }
 
         /**
-         * Memperbarui konten ticker tape.
+         * Mengisi div konten ticker dengan item awal.
+         * Setiap item dibungkus dalam <span> dengan kelas 'ticker-item' agar mudah ditargetkan.
+         * Konten diduplikasi untuk mendukung animasi loop CSS yang mulus (0% ke -50%).
+         * @param {HTMLElement} tickerContentDiv - Div yang akan diisi (misal: topTickerContentDiv).
+         * @param {string[]} assetsList - Daftar simbol aset yang dapat dipilih (saham + kripto).
          */
-        function updateTickers() {
-            const topTickerSpan = document.querySelector('#top-ticker span');
-            const bottomTickerSpan = document.querySelector('#bottom-ticker span');
+        function populateTickerContentInitially(tickerContentDiv, assetsList) {
+            tickerContentDiv.innerHTML = '';
+            
+            // Jumlah item dasar yang cukup untuk mengisi area layar dan memungkinkan duplikasi
+            const numBaseItems = 20; 
+            let itemsHtml = '';
+            for (let i = 0; i < numBaseItems; i++) {
+                const asset = assetsList[Math.floor(Math.random() * assetsList.length)];
+                // Bungkus setiap item dengan span.ticker-item
+                itemsHtml += `<span class="ticker-item">${generateTickerItemContent(asset)}</span>`;
+            }
+            // Duplikasi seluruh HTML item untuk memungkinkan animasi CSS loop tak terbatas
+            tickerContentDiv.innerHTML = itemsHtml + itemsHtml;
+        }
 
-            // Reset animasi dengan menghapus dan menambahkan kembali elemen span
-            // Ini diperlukan agar animasi dimulai ulang dengan konten baru
-            const newTopContent = createTickerContent();
-            const newBottomContent = createTickerContent();
+        /**
+         * Memperbarui nilai beberapa item ticker secara acak dengan efek pudar.
+         * Fungsi ini dipanggil secara berkala untuk mensimulasikan data baru tanpa me-refresh seluruh ticker.
+         * @param {HTMLElement} tickerContentDiv - Div yang berisi item-item ticker.
+         * @param {string[]} assetsList - Daftar simbol aset yang dapat dipilih.
+         */
+        function updateRandomTickerItems(tickerContentDiv, assetsList) {
+            const tickerItems = tickerContentDiv.querySelectorAll('.ticker-item');
+            if (tickerItems.length === 0) return;
 
-            topTickerSpan.style.animation = 'none';
-            topTickerSpan.offsetHeight; /* trigger reflow */
-            topTickerSpan.style.animation = null; 
-            topTickerSpan.innerHTML = newTopContent;
+            // Tentukan berapa persen item yang akan diperbarui dalam satu siklus (misal: 10% dari total item)
+            const numToUpdate = Math.max(1, Math.floor(tickerItems.length * 0.1));
 
-            bottomTickerSpan.style.animation = 'none';
-            bottomTickerSpan.offsetHeight; /* trigger reflow */
-            bottomTickerSpan.style.animation = null;
-            bottomTickerSpan.innerHTML = newBottomContent;
+            for (let i = 0; i < numToUpdate; i++) {
+                // Pilih item acak untuk diperbarui
+                const randomIndex = Math.floor(Math.random() * tickerItems.length);
+                const itemToUpdate = tickerItems[randomIndex];
+                
+                // Pilih aset acak baru
+                const randomAsset = assetsList[Math.floor(Math.random() * assetsList.length)];
+                
+                // Efek pudar keluar
+                itemToUpdate.style.opacity = '0'; // Langsung set opacity ke 0 (transisi akan terjadi)
+
+                // Setelah pudar keluar, ganti konten dan pudar masuk
+                setTimeout(() => {
+                    itemToUpdate.innerHTML = generateTickerItemContent(randomAsset); // Ganti konten
+                    itemToUpdate.style.opacity = '1'; // Pudar masuk
+                }, 300); // Waktu ini harus sesuai atau sedikit lebih kecil dari `transition` opacity di CSS
+            }
         }
 
         /**
          * Menginisialisasi ticker tape.
+         * Memuat konten awal dan mengatur interval untuk pembaruan data secara halus.
          */
         function initTickers() {
-            updateTickers(); // Set konten awal
-            setInterval(updateTickers, 10000); // Perbarui setiap 10 detik
+            const topTickerContentDiv = document.querySelector('#top-ticker .ticker-content');
+            const bottomTickerContentDiv = document.querySelector('#bottom-ticker .ticker-content');
+            
+            const allAssetsForTop = [...sampleStocks, ...sampleCryptos].sort(() => 0.5 - Math.random()); // Acak untuk konten atas
+            const allAssetsForBottom = [...sampleStocks, ...sampleCryptos].sort(() => 0.5 - Math.random()); // Acak untuk konten bawah
+
+            // Isi ticker dengan konten awal (didupilasi untuk animasi mulus)
+            populateTickerContentInitially(topTickerContentDiv, allAssetsForTop);
+            populateTickerContentInitially(bottomTickerContentDiv, allAssetsForBottom);
+
+            // Terapkan animasi CSS untuk scrolling
+            const animationDuration = 60; // Durasi animasi dalam detik (lebih lambat)
+            topTickerContentDiv.style.animation = `scroll-left ${animationDuration}s linear infinite`;
+            bottomTickerContentDiv.style.animation = `scroll-right ${animationDuration}s linear infinite`;
+
+            // Atur interval untuk memperbarui beberapa item ticker secara acak setiap beberapa detik.
+            // Ini akan membuat data terlihat terus berubah tanpa menghentikan animasi scrolling.
+            setInterval(() => {
+                updateRandomTickerItems(topTickerContentDiv, allAssetsForTop);
+                updateRandomTickerItems(bottomTickerContentDiv, allAssetsForBottom);
+            }, 5000); // Perbarui beberapa item setiap 5 detik
         }
 
 
@@ -1034,7 +1071,7 @@
 
             const filteredPlatforms = platformsData.filter(platform => {
                 const matchesCategory = activeCategory === 'all' || platform.category === activeCategory;
-                const matchesSearch = platform.name.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesSearch = searchTerm === '' || platform.name.toLowerCase().includes(searchTerm.toLowerCase());
                 
                 // Check if all selected features are present in the platform's tags
                 const matchesFeatures = selectedFeatures.size === 0 ||
@@ -1124,7 +1161,7 @@
                 const checkboxContainer = document.createElement('div');
                 checkboxContainer.className = 'flex items-center';
                 checkboxContainer.innerHTML = `
-                    <input type="checkbox" id="feature-${tag}" value="${tag}" class="h-4 w-4 text-sky-500 border-gray-500 rounded focus:ring-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-700"> <!-- Warna checkbox disesuaikan -->
+                    <input type="checkbox" id="feature-${tag}" value="${tag}" class="h-4 w-4 text-sky-500 border-gray-500 rounded focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition bg-gray-700"> <!-- Warna checkbox disesuaikan -->
                     <label for="feature-${tag}" class="ml-2 text-sm text-gray-300 capitalize">${tag.replace('-', ' ')}</label> <!-- Warna label disesuaikan -->
                 `;
                 const checkbox = checkboxContainer.querySelector('input');
